@@ -1,43 +1,6 @@
 import pygame
-import sys
 import os
-
-
-def main():
-    pygame.init()
-    size = width, height = 1000, 600
-    screen = pygame.display.set_mode(size)
-
-    all_sprites = pygame.sprite.Group()
-
-    swamp_image = load_image("swamp.png")
-    swamp = pygame.sprite.Sprite(all_sprites)
-    swamp.image = swamp_image
-    swamp.rect = swamp.image.get_rect()
-
-    sheet = pygame.image.load("data/frog_idle.png").convert_alpha()
-    frog = AnimatedSprite(sheet, 8, 1, 100, 100, all_sprites)
-    frog.rect.x = 400
-    frog.rect.y = 400
-
-    fps = 10
-    clock = pygame.time.Clock()
-
-    running = True
-    while running:
-        all_sprites.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        all_sprites.draw(screen)
-        clock.tick(fps)
-        pygame.display.flip()
-
-    while pygame.event.wait().type != pygame.QUIT:
-        pass
-
-    pygame.quit()
+import insect
 
 
 def load_image(name, color_key=None):
@@ -58,7 +21,7 @@ def load_image(name, color_key=None):
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y, group, color_key=None):
+    def __init__(self, sheet, columns, rows, x, y, group):
         super().__init__(group)
         self.frames = []
         self.cut_sheet(sheet, columns, rows)
@@ -79,6 +42,51 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.image = self.image.convert_alpha()
+
+
+class Frog(AnimatedSprite):
+    def __init__(self, sheet, columns, rows, x, y, group):
+        super().__init__(sheet, columns, rows, x, y, group)
+
+
+def main():
+    pygame.init()
+    size = width, height = 1000, 600
+    screen = pygame.display.set_mode(size)
+
+    all_sprites = pygame.sprite.Group()
+
+    swamp_image = load_image("swamp.png")
+    swamp = pygame.sprite.Sprite(all_sprites)
+    swamp.image = swamp_image
+    swamp.rect = swamp.image.get_rect()
+
+    frog_sheet = pygame.image.load("data/frog_idle.png").convert_alpha()
+    frog = Frog(frog_sheet, 8, 1, 100, 100, all_sprites)
+    frog.rect.x = 400
+    frog.rect.y = 400
+
+    beetle_sheet = pygame.image.load("data/beetle_move_right.png").convert_alpha()
+    beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_sprites)
+
+    fps = 8
+    clock = pygame.time.Clock()
+
+    running = True
+    while running:
+        all_sprites.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        all_sprites.draw(screen)
+        clock.tick(fps)
+        pygame.display.flip()
+
+    while pygame.event.wait().type != pygame.QUIT:
+        pass
+
+    pygame.quit()
 
 
 if __name__ == '__main__':
