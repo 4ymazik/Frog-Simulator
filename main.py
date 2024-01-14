@@ -49,12 +49,32 @@ class Frog(AnimatedSprite):
         super().__init__(sheet, columns, rows, x, y, group)
 
 
+class Border(pygame.sprite.Sprite):
+    def __init__(self, x1, y1, x2, y2, all_sprites, group):
+        super().__init__(all_sprites)
+        if x1 == x2:
+            self.add(group)
+            self.image = pygame.Surface([1, y2 - y1])
+            self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+        else:
+            self.add(group)
+            self.image = pygame.Surface([x2 - x1, 1])
+            self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
+
+
 def main():
     pygame.init()
     size = width, height = 1000, 600
     screen = pygame.display.set_mode(size)
 
     all_sprites = pygame.sprite.Group()
+    horizontal_borders = pygame.sprite.Group()
+    vertical_borders = pygame.sprite.Group()
+
+    Border(5, 5, width - 5, 5, all_sprites,vertical_borders)
+    Border(5, height - 5, width - 5, height - 5, all_sprites, vertical_borders)
+    Border(5, 5, 5, height - 5, all_sprites, horizontal_borders)
+    Border(width - 5, 5, width - 5, height - 5, all_sprites, horizontal_borders)
 
     swamp_image = load_image("swamp.png")
     swamp = pygame.sprite.Sprite(all_sprites)
@@ -67,6 +87,7 @@ def main():
     frog.rect.y = 400
 
     beetle_sheet = pygame.image.load("data/beetle_move_right.png").convert_alpha()
+    beetle_sheet2 = pygame.image.load("data/beetle_move_right.png").convert_alpha()
     beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_sprites)
 
     fps = 8
@@ -75,6 +96,11 @@ def main():
     running = True
     while running:
         all_sprites.update()
+        if pygame.sprite.spritecollideany(beetle, horizontal_borders):
+            beetle.vx = -beetle.vx
+        elif pygame.sprite.spritecollideany(beetle, vertical_borders):
+            beetle.vy = -beetle.vy
+        beetle.move()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
