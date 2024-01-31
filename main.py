@@ -39,6 +39,21 @@ class Border(pygame.sprite.Sprite):
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
 
 
+class HealthBar:
+    def __init__(self, x, y, w, h, max_hp):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.hp = max_hp
+        self.max_hp = max_hp
+
+    def draw(self, surface):
+        ratio = self.hp / self.max_hp
+        pygame.draw.rect(surface, "red", (self.x, self.y, self.w, self.h))
+        pygame.draw.rect(surface, "green", (self.x, self.y, self.w * ratio, self.h))
+
+
 def main():
     pygame.init()
     size = width, height = 1000, 600
@@ -47,6 +62,9 @@ def main():
     all_sprites = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
+
+    health_bar = HealthBar(250, 200, 300, 40, 100)
+    health_bar.hp = 100
 
     Border(5, 5, width - 5, 5, all_sprites,vertical_borders)
     Border(5, height - 5, width - 5, height - 5, all_sprites, vertical_borders)
@@ -74,12 +92,24 @@ def main():
     running = True
     while running:
         all_sprites.update()
+        health_bar.draw(screen)
+        health_bar.hp -= 1
+
         if pygame.sprite.spritecollideany(beetle, horizontal_borders):
             beetle.vx = -beetle.vx
         elif pygame.sprite.spritecollideany(beetle, vertical_borders):
             beetle.vy = -beetle.vy
         beetle.move()
         for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                clicked_sprites = [s for s in all_sprites if s.rect.collidepoint(pos)]
+                if beetle in clicked_sprites:
+                    beetle.kill()
+                    if health_bar.hp <= 75:
+                        health_bar.hp += 15
+                    else:
+                        health_bar.hp = 100
             if event.type == pygame.QUIT:
                 running = False
 
