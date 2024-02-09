@@ -2,6 +2,7 @@ import pygame
 import os
 import insect
 import animated_sprite
+import starter_screen
 
 
 def load_image(name, color_key=None):
@@ -20,38 +21,6 @@ def load_image(name, color_key=None):
         image = image.convert_alpha()
     return image
 
-
-def start_screen():
-    pygame.init()
-    size = width, height = 1000, 600
-    screen = pygame.display.set_mode(size)
-    intro_text = ["ЗАСТАВКА"]
-
-    color = (0, 30, 0)
-    screen.fill(color)
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-
-    running = True
-    fps = 8
-    clock = pygame.time.Clock()
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
-                main()
-        pygame.display.flip()
-        clock.tick(fps)
 
 class Frog(animated_sprite.AnimatedSprite):
     def __init__(self, sheet, columns, rows, x, y, group):
@@ -100,14 +69,14 @@ def main():
     swamp.image = swamp_image
     swamp.rect = swamp.image.get_rect()
 
-    Border(5, 5, width - 5, 5, all_sprites,vertical_borders)
+    Border(5, 5, width - 5, 5, all_sprites, vertical_borders)
     Border(5, height - 5, width - 5, height - 5, all_sprites, vertical_borders)
     Border(5, 5, 5, height - 5, all_sprites, horizontal_borders)
     Border(width - 5, 5, width - 5, height - 5, all_sprites, horizontal_borders)
 
     frog_sheet = pygame.image.load("data/frog_idle.png").convert_alpha()
     frog_sheet2 = pygame.image.load("data/frog_idle2.png").convert_alpha()
-    frog = Frog(frog_sheet,8, 1, 100, 100, all_sprites)
+    frog = Frog(frog_sheet, 8, 1, 100, 100, all_sprites)
     frog.rect.x = 400
     frog.rect.y = 400
 
@@ -115,7 +84,7 @@ def main():
     beetle_sheet2 = pygame.image.load("data/beetle_move_left.png").convert_alpha()
     beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_sprites)
 
-    health_bar = HealthBar(250, 200, 300, 40, 100)
+    health_bar = HealthBar(1, 550, 300, 40, 100)
     health_bar.hp = 100
     fps = 8
     clock = pygame.time.Clock()
@@ -123,8 +92,6 @@ def main():
     running = True
     while running:
         all_sprites.update()
-        health_bar.draw(screen)
-        health_bar.hp -= 1
 
         if pygame.sprite.spritecollideany(beetle, horizontal_borders):
             beetle.vx = -beetle.vx
@@ -145,14 +112,16 @@ def main():
                 running = False
 
         all_sprites.draw(screen)
+        health_bar.draw(screen)
+        health_bar.hp -= 1
         clock.tick(fps)
         pygame.display.flip()
 
     while pygame.event.wait().type != pygame.QUIT:
         pass
 
-    pygame.quit()
 
+pygame.quit()
 
 if __name__ == '__main__':
-    start_screen()
+    starter_screen.start_screen()
