@@ -3,6 +3,7 @@ import os
 import insect
 import animated_sprite
 import starter_screen
+import final_screen
 
 
 def load_image(name, color_key=None):
@@ -61,6 +62,7 @@ def main():
     screen = pygame.display.set_mode(size)
 
     all_sprites = pygame.sprite.Group()
+    all_insects = pygame.sprite.Group()
     horizontal_borders = pygame.sprite.Group()
     vertical_borders = pygame.sprite.Group()
 
@@ -82,36 +84,48 @@ def main():
 
     beetle_sheet = pygame.image.load("data/beetle_move_right.png").convert_alpha()
     beetle_sheet2 = pygame.image.load("data/beetle_move_left.png").convert_alpha()
-    beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_sprites)
+    beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_insects)
 
     health_bar = HealthBar(1, 550, 300, 40, 100)
     health_bar.hp = 100
     fps = 8
     clock = pygame.time.Clock()
-
+    spawn_count = 0
     running = True
     while running:
         all_sprites.update()
+        all_insects.update()
+        spawn_count += 1
+        if spawn_count == 15:
+            beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_insects)
+            spawn_count = 0
 
-        if pygame.sprite.spritecollideany(beetle, horizontal_borders):
-            beetle.vx = -beetle.vx
-        elif pygame.sprite.spritecollideany(beetle, vertical_borders):
-            beetle.vy = -beetle.vy
-        beetle.move()
+        for beetle in all_insects:
+            beetle.move()
+            if pygame.sprite.spritecollideany(beetle, horizontal_borders):
+                beetle.vx = -beetle.vx
+            elif pygame.sprite.spritecollideany(beetle, vertical_borders):
+                beetle.vy = -beetle.vy
+        if health_bar.hp <= 0:
+            running = False
+            final_screen.final_screen()
+
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
-                clicked_sprites = [s for s in all_sprites if s.rect.collidepoint(pos)]
-                if beetle in clicked_sprites:
-                    beetle.kill()
-                    if health_bar.hp <= 75:
-                        health_bar.hp += 15
-                    else:
-                        health_bar.hp = 100
+                clicked_sprites = [s for s in all_insects if s.rect.collidepoint(pos)]
+                for beetle in all_insects:
+                    if beetle in clicked_sprites:
+                        beetle.kill()
+                        if health_bar.hp <= 75:
+                            health_bar.hp += 15
+                        else:
+                            health_bar.hp = 100
             if event.type == pygame.QUIT:
                 running = False
 
         all_sprites.draw(screen)
+        all_insects.draw(screen)
         health_bar.draw(screen)
         health_bar.hp -= 1
         clock.tick(fps)

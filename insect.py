@@ -9,4 +9,3 @@ class Insect(animated_sprite.AnimatedSprite):
 
     def move(self):
         self.rect = self.rect.move(self.vx, self.vy)
-        print(self.rect)
