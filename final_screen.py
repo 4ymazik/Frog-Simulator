@@ -1,14 +1,20 @@
 import pygame
-import main
 import starter_screen
+import sys
 
 
-def final_screen():
+def final_screen(win):     # финальное окно
     pygame.init()
-    size = width, height = 1000, 600
+    size = 1000, 600
     screen = pygame.display.set_mode(size)
-    intro_text = ["Конец"]
-
+    intro_text = []
+    if win is True:
+        intro_text.append('Победа!')
+        intro_text.append('Поздравляю!')
+    else:
+        intro_text.append('Поражение')
+        intro_text.append('Ничего страшного')
+        intro_text.append('Нажмите любую кнопку, чтобы начать сначала')
     color = (0, 30, 0)
     screen.fill(color)
     font = pygame.font.Font(None, 30)
@@ -29,6 +35,7 @@ def final_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                sys.exit()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 starter_screen.start_screen()

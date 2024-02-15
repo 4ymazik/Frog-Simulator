@@ -1,7 +1,7 @@
 import animated_sprite
 
 
-class Insect(animated_sprite.AnimatedSprite):
+class Insect(animated_sprite.AnimatedSprite):   # класс букашки
     def __init__(self, sheet, columns, rows, x, y, group):
         super().__init__(sheet, columns, rows, x, y, group)
         self.vx = 20
