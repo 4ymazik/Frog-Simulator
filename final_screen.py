@@ -3,7 +3,7 @@ import starter_screen
 import sys
 
 
-def final_screen(win):     # финальное окно
+def final_screen(lvl1, lvl2, lvl3, win):     # финальное окно
     pygame.init()
     size = 1000, 600
     screen = pygame.display.set_mode(size)
@@ -11,6 +11,10 @@ def final_screen(win):     # финальное окно
     if win is True:
         intro_text.append('Победа!')
         intro_text.append('Поздравляю!')
+        intro_text.append('Ваше время:')
+        intro_text.append(f'Уровень 1: {lvl1}')
+        intro_text.append(f'Уровень 2: {lvl2}')
+        intro_text.append(f'Уровень 3: {lvl3}')
     else:
         intro_text.append('Поражение')
         intro_text.append('Ничего страшного')

@@ -90,11 +90,10 @@ class KillCount:    # счетчик убийств букашек и его о�
             self.intro_rect.x = 650
             self.text_coord += self.intro_rect.height
             self.background.blit(self.string_rendered, self.intro_rect)
-        print(self.kills_left)
-        print(self.text)
 
 
 def main(level):    # основная функция игры
+    global counting_string
     pygame.init()
     size = width, height = 1000, 600
     screen = pygame.display.set_mode(size)
@@ -119,25 +118,35 @@ def main(level):    # основная функция игры
     frog_sheet = pygame.image.load("data/frog_idle.png").convert_alpha()
     frog = Frog(frog_sheet, 8, 1, 100, 100, all_sprites)
     frog.rect.x = 400
-    frog.rect.y = 400
+    frog.rect.y = 450
 
     beetle_sheet = pygame.image.load("data/beetle_move_right.png").convert_alpha()
     beetle = insect.Insect(beetle_sheet, 4, 1, 100, 100, all_insects)
+
+    health_bar = HealthBar(1, 550, 300, 40, 100)
+    health_bar.hp = 100
 
     if level == 1:
         kills_left = 10
     elif level == 2:
         kills_left = 15
+        for beetle in all_insects:
+            beetle.vx = 30
     elif level == 3:
-        kills_left = 20
+        kills_left = 15
+        for beetle in all_insects:
+            beetle.vx = 40
 
-    health_bar = HealthBar(1, 550, 300, 40, 100)
-    health_bar.hp = 100
     kills_count = KillCount(kills_left, level, swamp_image, swamp_image2)
     fps = 8
     clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
+    font = pygame.font.Font(None, 30)
     spawn_count = 0
     running = True
+    level1_record = ''
+    level2_record = ''
+    level3_record = ''
     while running:
         all_sprites.update()
         all_insects.update()
@@ -145,32 +154,40 @@ def main(level):    # основная функция игры
         if level == 1:
             health_bar.hp -= 1
         elif level == 2:
-            health_bar.hp -= 1
-            for beetle in all_insects:
-                beetle.vx = 30
+            health_bar.hp -= 1.25
         elif level == 3:
-            health_bar.hp -= 2
-            for beetle in all_insects:
-                beetle.vx = 40
+            health_bar.hp -= 1.5
         if spawn_count == 12:
-            beetle = insect.Insect(beetle_sheet, 4, 1, random.randint(10, 990), 100, all_insects)
+            beetle = insect.Insect(beetle_sheet, 4, 1, random.randint(100, 900), 100, all_insects)
+            if level == 2:
+                beetle.vx = 30
+            elif level == 3:
+                beetle.vx = 40
             spawn_count = 0
 
         for beetle in all_insects:
-            beetle.move()
             if pygame.sprite.spritecollideany(beetle, horizontal_borders):  # букашка меняет направление движения при
                 beetle.vx = -beetle.vx                                      # касании границ экрана
             elif pygame.sprite.spritecollideany(beetle, vertical_borders):
                 beetle.vy = -beetle.vy
+            beetle.move()
         if health_bar.hp <= 0:  # закончилось хп? проиграл
             running = False
-            final_screen.final_screen(win=False)
+            final_screen.final_screen(0, 0, 0, win=False)
         if kills_count.kills_left <= 0:
             running = False
-            if level != 3:  # запуск следующего уровня при победе
+            if level == 1:  # запуск следующего уровня при победе
+                time_record = counting_string[:]
+                level1_record = time_record
+                main(level + 1)
+            elif level == 2:
+                time_record = counting_string[:]
+                level2_record = time_record
                 main(level + 1)
             elif level == 3:
-                final_screen.final_screen(win=True)
+                time_record = counting_string[:]
+                level3_record = time_record
+                final_screen.final_screen(level1_record, level2_record, level3_record, win=True)
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:  # убийство букашки при нажатии
                 pos = pygame.mouse.get_pos()
@@ -187,6 +204,26 @@ def main(level):    # основная функция игры
             if event.type == pygame.QUIT:
                 running = False
                 sys.exit()
+        counting_time = pygame.time.get_ticks() - start_time
+
+        counting_minutes = str(counting_time // 60000).zfill(2)
+        counting_seconds = str((counting_time % 60000) // 1000).zfill(2)
+        counting_millisecond = str(counting_time % 1000).zfill(3)
+
+        counting_string = "%s:%s:%s" % (counting_minutes, counting_seconds, counting_millisecond)
+
+        counting_text = font.render(str(counting_string), 1, (255, 255, 255))
+        counting_rect = (20, 20)
+        swamp_image.blit(swamp_image2, (0, 0))
+        swamp_image.blit(counting_text, counting_rect)
+
+        kills_count.text_coord -= kills_count.intro_rect.height
+        kills_count.text_coord -= 20
+        for line in kills_count.text:
+            kills_count.string_rendered = kills_count.font.render(line, 1, pygame.Color('white'))
+            kills_count.intro_rect.top = kills_count.text_coord
+            kills_count.text_coord += kills_count.intro_rect.height
+            swamp_image.blit(kills_count.string_rendered, kills_count.intro_rect)
 
         all_sprites.draw(screen)
         all_insects.draw(screen)
